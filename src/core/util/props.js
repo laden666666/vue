@@ -27,7 +27,7 @@ export function validateProp (
   vm?: Component
 ): any {
   const prop = propOptions[key]
-  // 是否使用默认值
+  // 是否未出入值
   const absent = !hasOwn(propsData, key)
   let value = propsData[key]
   // handle boolean props
@@ -36,7 +36,8 @@ export function validateProp (
     if (absent && !hasOwn(prop, 'default')) {
       value = false
     } else if (!isType(String, prop.type) && (value === '' || value === hyphenate(key))) {
-      //  (!isType(String, prop.type) 不执行吧？？？？
+      //  (!isType(String, prop.type) 多于吧，因为type此时肯定是Boolean
+      // value === hyphenate(key)是什么意思？？？？？
       value = true
     }
   }
@@ -59,13 +60,16 @@ export function validateProp (
 /**
  * Get the default value of a prop.
  */
+// 获取props的默认值
 function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): any {
   // no default, return undefined
+  // 没有默认值直接返回undefined
   if (!hasOwn(prop, 'default')) {
     return undefined
   }
   const def = prop.default
   // warn against non-factory defaults for Object & Array
+  // 默认值不可用设置为对象，因为对象是值引用类型，如果是对象应该改为一个工厂函数
   if (process.env.NODE_ENV !== 'production' && isObject(def)) {
     warn(
       'Invalid default value for prop "' + key + '": ' +
