@@ -80,6 +80,7 @@ function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): a
   }
   // the raw prop value was also undefined from previous render,
   // return previous default value to avoid unnecessary watcher trigger
+  // 如果有propsData，用propsData的值代替默认值
   if (vm && vm.$options.propsData &&
     vm.$options.propsData[key] === undefined &&
     vm._props[key] !== undefined
@@ -88,6 +89,7 @@ function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): a
   }
   // call factory function for non-Function types
   // a value is Function if its prototype is function even across different execution context
+  // 如果默认值是一个工厂，则执行工厂
   return typeof def === 'function' && getType(prop.type) !== 'Function'
     ? def.call(vm)
     : def
@@ -96,13 +98,16 @@ function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): a
 /**
  * Assert whether a prop is valid.
  */
+// 断言道具是否有效。
 function assertProp (
   prop: PropOptions,
   name: string,
   value: any,
   vm: ?Component,
+  // 是否未出入值
   absent: boolean
 ) {
+  // 如果必填且未传入，直接警告
   if (prop.required && absent) {
     warn(
       'Missing required prop: "' + name + '"',
@@ -110,6 +115,7 @@ function assertProp (
     )
     return
   }
+  // 如果非必填，未传入，不再校验
   if (value == null && !prop.required) {
     return
   }
@@ -117,6 +123,7 @@ function assertProp (
   let valid = !type || type === true
   const expectedTypes = []
   if (type) {
+    // 将重载的非数组转为类型数组
     if (!Array.isArray(type)) {
       type = [type]
     }
@@ -148,16 +155,28 @@ function assertProp (
 
 const simpleCheckRE = /^(String|Number|Boolean|Function|Symbol)$/
 
+// 校验类型
 function assertType (value: any, type: Function): {
+  // 是否校验成功
   valid: boolean;
+  // 失败的提示
   expectedType: string;
 } {
   let valid
   const expectedType = getType(type)
   if (simpleCheckRE.test(expectedType)) {
+    // 简单类型的校验，包装类和字面量是不同的，例如字符串：
+    // var a = '1'
+    // var b = new String('1')
+    // typeof a 是string
+    // typeof b 是object
+
+    // 对字面量变量校验
     const t = typeof value
     valid = t === expectedType.toLowerCase()
+
     // for primitive wrapper objects
+    // 包装类校验对象的校验
     if (!valid && t === 'object') {
       valid = value instanceof type
     }
@@ -166,6 +185,7 @@ function assertType (value: any, type: Function): {
   } else if (expectedType === 'Array') {
     valid = Array.isArray(value)
   } else {
+    // 都不属于校验
     valid = value instanceof type
   }
   return {
@@ -179,12 +199,19 @@ function assertType (value: any, type: Function): {
  * because a simple equality check will fail when running
  * across different vms / iframes.
  */
+// 获取类型名
 function getType (fn) {
   const match = fn && fn.toString().match(/^\s*function (\w+)/)
   return match ? match[1] : ''
 }
 
+/**
+ * 判断type是否属于fn类型
+ * @param {*} type    要校验的对象
+ * @param {*} fn      对象应该属于的类型，是一个函数，也可能是一个函数的数组
+ */
 function isType (type, fn) {
+  // 
   if (!Array.isArray(fn)) {
     return getType(fn) === getType(type)
   }
