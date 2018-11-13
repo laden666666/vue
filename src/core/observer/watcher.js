@@ -22,30 +22,50 @@ let uid = 0
  * This is used for both the $watch() api and directives.
  */
 export default class Watcher {
+  // 控件实例
   vm: Component;
+  // eval表达式???
   expression: string;
+  // 更新时的回调
   cb: Function;
+  // uid
   id: number;
+  // 是否深度
   deep: boolean;
+  // 是否是用户创建的
   user: boolean;
+  // 是否立刻执行？？？
   lazy: boolean;
+  // 是否是异步的？？？
   sync: boolean;
+  // ？？？？
   dirty: boolean;
+  // 是否激活中？？？
   active: boolean;
+  // 有多少dep依赖当前watch
   deps: Array<Dep>;
+  // ？？？？
   newDeps: Array<Dep>;
+  // deps的id集合，提升查询效率
   depIds: ISet;
+  // 应该也是提升newDeps查询效率的
   newDepIds: ISet;
+  // ？？？
   getter: Function;
+  // 真正的值？？？
   value: any;
 
   constructor (
+    // 必须传入
     vm: Component,
+    // 表达式
     expOrFn: string | Function,
+    // 是更新时的回调
     cb: Function,
     options?: Object
   ) {
     this.vm = vm
+    // 给一个类增加watcher
     vm._watchers.push(this)
     // options
     if (options) {
@@ -54,6 +74,7 @@ export default class Watcher {
       this.lazy = !!options.lazy
       this.sync = !!options.sync
     } else {
+      // 默认都是false
       this.deep = this.user = this.lazy = this.sync = false
     }
     this.cb = cb
@@ -62,6 +83,7 @@ export default class Watcher {
     this.dirty = this.lazy // for lazy watchers
     this.deps = []
     this.newDeps = []
+    // 使用自定义的Set代替浏览器的Set
     this.depIds = new Set()
     this.newDepIds = new Set()
     this.expression = process.env.NODE_ENV !== 'production'
@@ -82,6 +104,7 @@ export default class Watcher {
         )
       }
     }
+    // 如果是延时计算，value的值先不计算出来
     this.value = this.lazy
       ? undefined
       : this.get()
@@ -90,7 +113,10 @@ export default class Watcher {
   /**
    * Evaluate the getter, and re-collect dependencies.
    */
+  // 可观察数据的get调用，所有getter会通过pushTarget在全局的依赖中
+  // 先调用
   get () {
+    // 先this压入全局的dep栈的栈顶，再运行表达式，这样dep
     pushTarget(this)
     let value
     const vm = this.vm
@@ -117,6 +143,7 @@ export default class Watcher {
   /**
    * Add a dependency to this directive.
    */
+  // 给某watch增加依赖
   addDep (dep: Dep) {
     const id = dep.id
     if (!this.newDepIds.has(id)) {
@@ -131,6 +158,7 @@ export default class Watcher {
   /**
    * Clean up for dependency collection.
    */
+  // 清空一个watch的全部依赖
   cleanupDeps () {
     let i = this.deps.length
     while (i--) {
@@ -239,6 +267,7 @@ export default class Watcher {
  * getters, so that every nested property inside the object
  * is collected as a "deep" dependency.
  */
+// 递归遍历一个对象以唤起所有转换的getter，以便将对象内的每个嵌套属性收集为“深度”依赖项
 const seenObjects = new Set()
 function traverse (val: any) {
   seenObjects.clear()

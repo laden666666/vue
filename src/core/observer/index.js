@@ -32,6 +32,7 @@ export const observerState = {
  * object's property keys into getter/setters that
  * collect dependencies and dispatches updates.
  */
+// 监听一个对象，并将变化的值保存到dep中。对于普通对象，就是创建getter和setter，对于数组对象，用arrayMethods重写其数组方法，实现对齐监听
 export class Observer {
   value: any;
   dep: Dep;
@@ -104,6 +105,7 @@ function copyAugment (target: Object, src: Object, keys: Array<string>) {
  * returns the new observer if successfully observed,
  * or the existing observer if the value already has one.
  */
+// 将一个普通对象变为一个响应式对象，对于普通对象或数组，就是用一个Observer对象对齐属性监听
 export function observe (value: any, asRootData: ?boolean): Observer | void {
   if (!isObject(value) || value instanceof VNode) {
     return

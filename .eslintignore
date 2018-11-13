@@ -1,3 +1,5 @@
 flow
 dist
 packages
+src
+node_modules

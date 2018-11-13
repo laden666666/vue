@@ -2,6 +2,7 @@ import type { Config } from '../src/core/config'
 import type VNode from '../src/core/vdom/vnode'
 import type Watcher from '../src/core/observer/watcher'
 
+// Vue的实例或控件实例
 declare interface Component {
   // constructor information
   static cid: number;
@@ -55,6 +56,7 @@ declare interface Component {
   _renderProxy: Component;
   _renderContext: ?Component;
   _watcher: Watcher;
+  // 控件初始化了哪些Watcher
   _watchers: Array<Watcher>;
   _computedWatchers: { [key: string]: Watcher };
   _data: Object;
