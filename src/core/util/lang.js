@@ -28,9 +28,10 @@ export function def (obj: Object, key: string, val: any, enumerable?: boolean) {
 /**
  * Parse simple path.
  */
+// 一个路径取值函数，类似lodash的_.property
 const bailRE = /[^\w.$]/
 export function parsePath (path: string): any {
-  // 如果纯\w直接保存
+  // 如果不是字母和.的组合，直接返回，因为不是合法路径
   if (bailRE.test(path)) {
     return
   }

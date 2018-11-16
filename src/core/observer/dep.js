@@ -9,12 +9,12 @@ let uid = 0
  * A dep is an observable that can have multiple
  * directives subscribing to it.
  */
-// dep定义了依赖收集，供。
+// dep定义了依赖收集，记录一个watch执行时候，依赖了哪些其他watch。
 export default class Dep {
-  // 目标的Watch，当目标Watch发生变化的时候，会通知依赖其的Watch
+  // 目标的Watch，当Watch计算expOrFn时候，会收集调用了dep对象的depend方法的Watch，从而确定一个watcher依赖哪些watcher
   static target: ?Watcher;
   id: number;
-  // 依赖该Watch的Watch
+  // target依赖其他Watch的列表，列表中的watch均依赖于target
   subs: Array<Watcher>;
 
   constructor () {
@@ -22,11 +22,12 @@ export default class Dep {
     this.subs = []
   }
 
-  // 增加依赖该Target的Watch，target变化的话会通知所有的监听的watch
+  // 增加target依赖的watch，在执行depend时候，会将当前dep放入栈顶watch的deps中，在其addDep方法中会回调addSub方法
   addSub (sub: Watcher) {
     this.subs.push(sub)
   }
 
+  // 移除target依赖的watch
   removeSub (sub: Watcher) {
     remove(this.subs, sub)
   }

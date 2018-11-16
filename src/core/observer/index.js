@@ -22,17 +22,17 @@ const arrayKeys = Object.getOwnPropertyNames(arrayMethods)
  * we don't want to force conversion because the value may be a nested value
  * under a frozen data structure. Converting it would defeat the optimization.
  */
-export const observerState = {
-  shouldConvert: true
+// 监听一个对象，并将变化的值保存到dep中。对于普通对象，就是创建getter和setter，对于数组对象，用arrayMethods重写其数组方法，实现对齐监听？？？
+  export const observerState = {
+shouldConvert: true
 }
 
-/**
+ /**
  * Observer class that are attached to each observed
  * object. Once attached, the observer converts target
  * object's property keys into getter/setters that
  * collect dependencies and dispatches updates.
- */
-// 监听一个对象，并将变化的值保存到dep中。对于普通对象，就是创建getter和setter，对于数组对象，用arrayMethods重写其数组方法，实现对齐监听
+*/
 export class Observer {
   value: any;
   dep: Dep;
