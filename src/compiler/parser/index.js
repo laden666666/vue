@@ -1,5 +1,8 @@
 /* @flow */
 
+/**
+ * 核心模块
+ */
 import he from 'he'
 import { parseHTML } from './html-parser'
 import { parseText } from './text-parser'
@@ -19,13 +22,20 @@ import {
   pluckModuleFunction
 } from '../helpers'
 
+//匹配v-on事件绑定的正则
 export const onRE = /^@|^v-on:/
+//匹配指令、@、:的正则
 export const dirRE = /^v-|^@|^:/
+//匹配for里面的变量（索引）的正则
 export const forAliasRE = /(.*?)\s+(?:in|of)\s+(.*)/
+//匹配v-for的多种形式的正则
 export const forIteratorRE = /\((\{[^}]*\}|[^,]*),([^,]*)(?:,([^,]*))?\)/
 
+//
 const argRE = /:(.*)$/
+//
 const bindRE = /^:|^v-bind:/
+//
 const modifierRE = /\.[^.]+/g
 
 const decodeHTMLCached = cached(he.decode)
@@ -624,6 +634,9 @@ function guardIESVGBug (attrs) {
   return res
 }
 
+/**
+ * for循环的中定义的变量不能用于v-model绑定
+ */
 function checkForAliasModel (el, value) {
   let _el = el
   while (_el) {

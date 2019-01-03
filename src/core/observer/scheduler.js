@@ -13,7 +13,7 @@ import {
 
 export const MAX_UPDATE_COUNT = 100
 
-// Watcher队列
+// Watcher队列，由watch的update将非sync的watch放入该队列中，防止立刻计算，
 const queue: Array<Watcher> = []
 // 激活的控件实例列表。不是所以就的控件实例都进行观察，仅被激活的控件实例才进行观察
 const activatedChildren: Array<Component> = []

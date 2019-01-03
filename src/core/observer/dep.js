@@ -13,6 +13,7 @@ let uid = 0
 export default class Dep {
   // 目标的Watch，当Watch计算expOrFn时候，会收集调用了dep对象的depend方法的Watch，从而确定一个watcher依赖哪些watcher
   static target: ?Watcher;
+	// 由uid生成
   id: number;
   // target依赖其他Watch的列表，列表中的watch均依赖于target
   subs: Array<Watcher>;

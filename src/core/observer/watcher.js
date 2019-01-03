@@ -39,13 +39,13 @@ export default class Watcher {
   lazy: boolean;
   // 是否是异步的？？？
   sync: boolean;
-  // ？？？？
+  // 标记演示计算是否完成使用。true表示处于延时计算状态，需要调用evaluate方法进行计算
   dirty: boolean;
-  // 是否激活中？？？
+  // 是否激活中，未激活时候不会执行run方法
   active: boolean;
   // 当前watcher依赖哪些其他watcher。先收集依赖watcher的dep到这个数组中，再由dep的target就知道依赖的watcher了。
   deps: Array<Dep>;
-  // ？？？？
+  // 用于在每一个执行getter时候收集依赖的dep，用于删除deps里面已经不再依赖的dep元素二用
   newDeps: Array<Dep>;
   // deps的id集合，提升查询效率
   depIds: ISet;
@@ -196,10 +196,10 @@ export default class Watcher {
 		// 如果是延时计算，会不立刻run，之后evaluate再执行run
       this.dirty = true
     } else if (this.sync) {
-		// 如果是同步执行run
+		// 如果是同步的，立刻执行run
       this.run()
     } else {
-		// 放入队列中执行
+		// 放入队列中执行，由scheduler执行更新
       queueWatcher(this)
     }
   }
@@ -216,7 +216,7 @@ export default class Watcher {
       const value = this.get()
       if (
         value !== this.value ||
-		// ？？？？？？？？？为什么新值计算了就要触发watch？？
+		// 为什么新值计算了就要触发object和deep的watch？？？？？？？？？？？难度是因为如果一个对象没有的子属性没有更改，就不会触发run？？？？
         // Deep watchers and watchers on Object/Arrays should fire even
         // when the value is the same, because the value may
         // have mutated.
