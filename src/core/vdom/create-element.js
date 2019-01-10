@@ -92,6 +92,7 @@ export function _createElement (
   if (typeof tag === 'string') {
     let Ctor
     ns = (context.$vnode && context.$vnode.ns) || config.getTagNamespace(tag)
+		// 如果是平台的保留的html节点，创建VNode
     if (config.isReservedTag(tag)) {
       // platform built-in elements
       vnode = new VNode(
@@ -99,6 +100,7 @@ export function _createElement (
         undefined, undefined, context
       )
     } else if (isDef(Ctor = resolveAsset(context.$options, 'components', tag))) {
+			// 如果是控件，调用createComponent
       // component
       vnode = createComponent(Ctor, data, context, children, tag)
     } else {

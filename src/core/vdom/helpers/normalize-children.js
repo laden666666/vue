@@ -40,6 +40,7 @@ function isTextNode (node): boolean {
   return isDef(node) && isDef(node.text) && isFalse(node.isComment)
 }
 
+// 发现childre是一个array，递归
 function normalizeArrayChildren (children: any, nestedIndex?: string): Array<VNode> {
   const res = []
   let i, c, lastIndex, last
@@ -52,6 +53,7 @@ function normalizeArrayChildren (children: any, nestedIndex?: string): Array<VNo
     if (Array.isArray(c) && c.length > 0) {
       c = normalizeArrayChildren(c, `${nestedIndex || ''}_${i}`)
       // merge adjacent text nodes
+			// 如果上一次最后一个几点和这一次第一个节点都是文本节点，合并
       if (isTextNode(c[0]) && isTextNode(last)) {
         res[lastIndex] = createTextVNode(last.text + (c[0]: any).text)
         c.shift()
