@@ -19,7 +19,8 @@ const queue: Array<Watcher> = []
 const activatedChildren: Array<Component> = []
 // 一个存储WatcherID的map，用于去除，方式一个Watcher被放入queue多次
 let has: { [key: number]: ?true } = {}
-// ？？？？
+// 记录一次flush中，一个watch执行的次数，如果超过MAX_UPDATE_COUNT，表示可能出现了死循环
+// 貌似仅在开发环境中使用，生产环境死循环就一直死着？？？？
 let circular: { [key: number]: number } = {}
 // 表示是否等待nexttick，只有在nexttick才做出响应
 let waiting = false
@@ -65,19 +66,25 @@ function flushSchedulerQueue () {
   // 3.如果在父组件的观察程序运行期间销毁了组件，可以跳过其观察者。
 
   // 将queue中保存的wtacher对象根据创建顺序排序，因为uid是递增的，所有后创建的会拍到后面
+	// 排序保证了上面的3个情况，而且可以确保不会死循环。
   queue.sort((a, b) => a.id - b.id)
 
   // do not cache length because more watchers might be pushed
   // as we run existing watchers
-  // 当flush的过程中，可能还会有新的变量压入queue数组中
+  // 当flush的过程中，还可以确保死循环可以更快的检查出来
   for (index = 0; index < queue.length; index++) {
     watcher = queue[index]
     id = watcher.id
     has[id] = null
+		// run里面会改变数组queue的长度
+		// queue里面有render依赖的getter、props、计算值和用户的watch
+		// getter、props、计算值理论上都是纯函数，用户的watch却不是，因此用户的watch会改变queue的值，调用栈是watcher.run->watch.cb->dep.notify->watch.update->queueWatcher，在queueWatcher里面会改变queue
+		// 注意执行queueWatcher时，flushing为true
     watcher.run()
     // in dev build, check and stop circular updates.
     if (process.env.NODE_ENV !== 'production' && has[id] != null) {
       circular[id] = (circular[id] || 0) + 1
+			// 如果某个watcher，在一次flush被多次依赖，就表示这里可能有一个死循环，如果超个MAX_UPDATE_COUNT（100），无论是否是死循环都当死循环处理
       if (circular[id] > MAX_UPDATE_COUNT) {
         warn(
           'You may have an infinite update loop ' + (
@@ -159,7 +166,8 @@ export function queueWatcher (watcher: Watcher) {
     } else {
       // if already flushing, splice the watcher based on its id
       // if already past its id, it will be run next immediately.
-      // 如果有id相同的就替换掉
+			// 如果flush中，queue已经根据id排好序了。倒着检索位置，将新值插入queue中
+			// 暂时不清楚在flushing时，插入queue中的有没有计算值或render相关的更新，如有那queue做成二叉树效率会不会高些？
       let i = queue.length - 1
       while (i > index && queue[i].id > watcher.id) {
         i--
@@ -168,6 +176,7 @@ export function queueWatcher (watcher: Watcher) {
     }
     // queue the flush
     // 当观察者队列发生变化时候，要flush
+		// 如果正在flushing，将导致两次flush？？？？？？？？？？？？
     if (!waiting) {
       waiting = true
       // 而且要在异步回调中flush，这样多次pushwatch仅会触发一次flush

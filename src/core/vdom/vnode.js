@@ -12,7 +12,7 @@ export default class VNode {
   text: string | void;
   // 当前虚拟节点对应的真实dom节点
   elm: Node | void;
-  // 当前节点的名字空间
+  // 当前节点的名字空间，如svg等等
   ns: string | void;
   // 当前节点的编译作用域
   context: Component | void; // rendered in this component's scope
@@ -38,9 +38,13 @@ export default class VNode {
   isCloned: boolean; // is a cloned node?
   // 是否有v-once指令
   isOnce: boolean; // is a v-once node?
+	// 异步控件？？？？？？？？？？
   asyncFactory: Function | void; // async component factory function
+	// 异步控件？？？？？？？？？？
   asyncMeta: Object | void;
+	// 异步控件？？？？？？？？？？
   isAsyncPlaceholder: boolean;
+	// ssr？？？？？？？？？？
   ssrContext: Object | void;
   // 函数化组件作用域
   functionalContext: Component | void; // real context vm for functional nodes
@@ -48,13 +52,21 @@ export default class VNode {
   functionalScopeId: ?string; // functioanl scope id support
 
   constructor (
+		// 标签名称
     tag?: string,
+		// ?????
     data?: VNodeData,
+		// 子虚拟dom，不是子控件，这一点和VueComponent的children一定要分清
     children?: ?Array<VNode>,
+		// dom的文字，对应textcomtent属性
     text?: string,
+		// 真实的Node
     elm?: Node,
+		// 虚拟dom所属的VueComponent
     context?: Component,
+		// VueComponent的options
     componentOptions?: VNodeComponentOptions,
+		// 控件的异步函数？？？？
     asyncFactory?: Function
   ) {
     this.tag = tag

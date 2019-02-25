@@ -98,18 +98,27 @@ const hooksToMerge = Object.keys(componentVNodeHooks)
 
 // 核心函数，创建控件
 export function createComponent (
+	// vue控件，包括vue.extend的子类（其实也是函数）、工厂函数、对象（包括sfc控件）3中
   Ctor: Class<Component> | Function | Object | void,
+	// 
   data: ?VNodeData,
+	// 该控件所属的component
   context: Component,
+	// 子vnode，应该是给其做slot的？？？？
   children: ?Array<VNode>,
+	// 控件的标签名
   tag?: string
 ): VNode | void {
+	
+	// 未定义直接返回
   if (isUndef(Ctor)) {
     return
   }
 
+	// vue本身
   const baseCtor = context.$options._base
 
+	//	如果是对象，转为子类（其实是一个函数）
   // plain options object: turn it into a constructor
   if (isObject(Ctor)) {
     Ctor = baseCtor.extend(Ctor)
@@ -117,6 +126,7 @@ export function createComponent (
 
   // if at this stage it's not a constructor or an async component factory,
   // reject.
+	// 如果不是vue的extend子类或者是工厂函数，直接返回
   if (typeof Ctor !== 'function') {
     if (process.env.NODE_ENV !== 'production') {
       warn(`Invalid Component definition: ${String(Ctor)}`, context)
@@ -125,6 +135,7 @@ export function createComponent (
   }
 
   // async component
+	// 如果函数中未定义cid，表示是工厂函数，则等待函数执行完成后，？？？
   let asyncFactory
   if (isUndef(Ctor.cid)) {
     asyncFactory = Ctor
@@ -198,7 +209,7 @@ export function createComponent (
 export function createComponentInstanceForVnode (
   vnode: any, // we know it's MountedComponentVNode but flow doesn't
   parent: any, // activeInstance in lifecycle state
-  parentElm?: ?Node,
+  parentElm?: ?Node, 
   refElm?: ?Node
 ): Component {
   const vnodeComponentOptions = vnode.componentOptions

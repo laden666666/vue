@@ -15,8 +15,11 @@ import VNode, { cloneVNodes, createEmptyVNode } from '../vdom/vnode'
 
 import { isUpdatingChildComponent } from './lifecycle'
 
+// 初始化render,init里面调用
 export function initRender (vm: Component) {
+	// 初始化必须将vm的vnode清除
   vm._vnode = null // the root of the child tree
+
   const options = vm.$options
   const parentVnode = vm.$vnode = options._parentVnode // the placeholder node in parent tree
   const renderContext = parentVnode && parentVnode.context
@@ -26,6 +29,7 @@ export function initRender (vm: Component) {
   // so that we get proper render context inside it.
   // args order: tag, data, children, normalizationType, alwaysNormalize
   // internal version is used by render functions compiled from templates
+	// createElement的简写
   vm._c = (a, b, c, d) => createElement(vm, a, b, c, d, false)
   // normalization is always applied for the public version, used in
   // user-written render functions.
@@ -36,6 +40,7 @@ export function initRender (vm: Component) {
   const parentData = parentVnode && parentVnode.data
 
   /* istanbul ignore else */
+	// 定义$attrs和$listeners
   if (process.env.NODE_ENV !== 'production') {
     defineReactive(vm, '$attrs', parentData && parentData.attrs || emptyObject, () => {
       !isUpdatingChildComponent && warn(`$attrs is readonly.`, vm)
@@ -57,10 +62,14 @@ export function renderMixin (Vue: Class<Component>) {
     return nextTick(fn, this)
   }
 
+	// 定义原型上的render函数
   Vue.prototype._render = function (): VNode {
-    const vm: Component = this
+    const vm: Component = this,
+		
+		// 真正的render函数在$option里面。取出
     const { render, _parentVnode } = vm.$options
 
+		// 只有挂载后，才render子控件
     if (vm._isMounted) {
       // if the parent didn't update, the slot nodes will be the ones from
       // last render. They need to be cloned to ensure "freshness" for this render.

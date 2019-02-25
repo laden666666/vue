@@ -1,6 +1,8 @@
+//系统控件的配置，不是用户配置
 declare type InternalComponentOptions = {
-  //用于标记options是InternalComponentOptions还是一个一般的options。使用InternalComponentOptions创建component实例要比普通的option效率高，普通的option需要进行处理才能转换为InternalComponentOptions
+  // 用于标记options是InternalComponentOptions还是一个一般的options。使用InternalComponentOptions创建component实例要比普通的option效率高，普通的option需要进行处理才能转换为InternalComponentOptions
   _isComponent: true;
+	// 
   parent: Component;
   propsData: ?Object;
   _parentVnode: VNode;
@@ -15,12 +17,15 @@ declare type InternalComponentOptions = {
 
 type InjectKey = string | Symbol;
 
-// Vue的配置
+// 用户的控件配置
 declare type ComponentOptions = {
-  // data
+  // 只有根可以传data，子控件传Function
   data: Object | Function | void;
+	// 定义props
   props?: { [key: string]: PropOptions };
+	// 定义传给props的东西，主要是给new Vue时候传的
   propsData?: ?Object;
+	// 计算值
   computed?: {
     [key: string]: Function | {
       get?: Function;
@@ -28,19 +33,25 @@ declare type ComponentOptions = {
       cache?: boolean
     }
   };
+	// 方法
   methods?: { [key: string]: Function };
+	// 监听器
   watch?: { [key: string]: Function | string };
 
   // DOM
   el?: string | Element;
+	// 模板
   template?: string;
+	// render函数
   render: (h: () => VNode) => VNode;
+	// 渲染失败函数
   renderError?: (h: () => VNode, err: Error) => VNode;
 
   // 在 render 函数中编译模板字符串。只在独立构建时有效
   staticRenderFns?: Array<() => VNode>;
 
   // lifecycle
+	// 生命周期方法
   beforeCreate?: Function;
   created?: Function;
   beforeMount?: Function;
@@ -54,17 +65,22 @@ declare type ComponentOptions = {
   errorCaptured?: () => boolean | void;
 
   // assets
+	// 指令
   directives?: { [key: string]: Object };
+	// 控件
   components?: { [key: string]: Class<Component> };
   // ????????????????????
   transitions?: { [key: string]: Object };
+	// 过滤器
   filters?: { [key: string]: Function };
 
   // context
+	// 依赖注入相关
   provide?: { [key: string | Symbol]: any } | () => { [key: string | Symbol]: any };
   inject?: { [key: string]: InjectKey | { from?: InjectKey, default?: any }} | Array<string>;
 
   // component v-model customization
+	// vmode相关
   model?: {
     prop?: string;
     event?: string;
@@ -72,16 +88,21 @@ declare type ComponentOptions = {
 
   // misc
   parent?: Component;
+	// mixin
   mixins?: Array<Object>;
+	// 控件名component._name，如果没有会用SFC的文件名代替，否则显示控件在components组成的名字，都没有显示匿名
   name?: string;
+	// 继承
   extends?: Class<Component> | Object;
-  // 这个选项只在完整构建版本中的浏览器内编译时可用
+  // 定义代替{{}}的字符，这个选项只在完整构建版本中的浏览器内编译时可用
   delimiters?: [string, string];
   // 当设为 true 时，将会保留且渲染模板中的 HTML 注释。默认行为是舍弃它们。
   comments?: boolean;
+	// 是否集成html的props，这将影响$attr获得的内容
   inheritAttrs?: boolean;
 
-  // private
+	// private
+  // 这些私有属性是用户不可配置的，将他们保存到options里面值得商榷
   //用于标记options是InternalComponentOptions还是一个一般的options。使用InternalComponentOptions创建component实例要比普通的option效率高，普通的option需要进行处理才能转换为InternalComponentOptions。例如普通的options必须配置template或者render的任意一项，如果配了template，会被编译成render；而InternalComponentOptions必须配置render，不可用配置template
   _isComponent?: true;
   //将propsOption的props名字以数组的形式保存起来，如props:{name: {type: String, default: ''}}，则_propKeys值为['name']。这样便于后续快速遍历props的名字 C
@@ -103,6 +124,7 @@ declare type ComponentOptions = {
   //当前的控件实例的node节点
   _refElm: ?Node;
 };
+
 
 declare type PropOptions = {
   type: Function | Array<Function> | null;

@@ -59,6 +59,7 @@ Dep.target = null
 // 存储targent的堆，因为运行表达式其实的是对一个依赖树的遍历，因此将正在执行表达式的对象压入栈中，等遍历完就可以知道整个表达式的依赖关系
 // 如A B C都是响应式数据，其中表示expA依赖expB和A的getter、expB依赖expC和B的getter，expC依赖C的getter。因为getter不依赖其他数据，因为只需要dep而不需要watcher。当执行expA时，先将expA压入栈，expA和A的getter的dep.depend触发，因expA的Watch对象在栈顶，会收集expA依赖A和expB，然后会将expB放入栈顶，依次类推
 // 因此整个依赖树的确定就是一个数的深度优先查找，表达式是节点，响应式数据的getter是叶子节点，当遍历到表达式时候会将该表达式的watcher压入栈中继续遍历该表达的子树
+// 最终将所用依赖关系计算出来，就出计算出一个（也可以是多个）有向无环图（如果有环，就出出现相互依赖，出现死循环）
 const targetStack = []
 
 // 压入一个watcher在全局watcher栈栈顶

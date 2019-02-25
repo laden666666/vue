@@ -1,6 +1,7 @@
 declare type VNodeChildren = Array<?VNode | string | VNodeChildren> | string;
 
 declare type VNodeComponentOptions = {
+	// 
   Ctor: Class<Component>;
   propsData: ?Object;
   listeners: ?Object;

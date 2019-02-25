@@ -1,7 +1,7 @@
 /* @flow */
 
 /**
- * 最基础的初始化
+ * vue真正的初始化，被vue的构造函数调用
  */
 import config from '../config'
 import { initProxy } from './proxy'
@@ -16,11 +16,14 @@ import { extend, mergeOptions, formatComponentName } from '../util/index'
 //vue实例的id的种子
 let uid = 0
 
+// 在Vue原型上面定义_init
 export function initMixin (Vue: Class<Component>) {
   // _init是vue原型上的私有方法，是vue真正的实例化方法。相当于jq的init方法
+  // _init会定义_uid，初始化事件、Provide、render、Injections等等，还会执行beforeCreate和created两个生命周期
   Vue.prototype._init = function (options?: Object) {
     const vm: Component = this
     // a uid
+		// 当前的Vue（VueComponent）的实例id
     vm._uid = uid++
 
     let startTag, endTag
@@ -33,15 +36,20 @@ export function initMixin (Vue: Class<Component>) {
     }
 
     // a flag to avoid this being observed
-    // src/core/observer会用到。具体作用？？？？？？？？？？？？
+		// _isVue应该是一个证明当对象是一个Vue（VueComponent）的实例，相当于vm instanseof Vue
     vm._isVue = true
+		
     // merge options
+		// _isComponent
+		// ？？？？？？？？？？？？？？？？
     if (options && options._isComponent) {
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
       // internal component options needs special treatment.
+			// 优化内部组件实例化，因为动态选项合并非常缓慢，并且没有内部组件选项需要特殊处理。
       initInternalComponent(vm, options)
     } else {
+			// 使用mergeOptions合并options。将构造器保存的默认配置（包括vue.extend继承的配置），和用户初始化配置合并
       vm.$options = mergeOptions(
         resolveConstructorOptions(vm.constructor),
         options || {},
@@ -54,15 +62,25 @@ export function initMixin (Vue: Class<Component>) {
     } else {
       vm._renderProxy = vm
     }
+		
     // expose real self
+		// 定义私有变量_self
     vm._self = vm
+		// 初始化生命周期
     initLifecycle(vm)
+		// 初始化事件
     initEvents(vm)
+		// 
     initRender(vm)
+		// 
     callHook(vm, 'beforeCreate')
+		// 
     initInjections(vm) // resolve injections before data/props
+		// 
     initState(vm)
+		// 
     initProvide(vm) // resolve provide after data/props
+		// 
     callHook(vm, 'created')
 
     /* istanbul ignore if */
@@ -95,11 +113,18 @@ function initInternalComponent (vm: Component, options: InternalComponentOptions
   }
 }
 
+// 从Vue或子类的类（函数）获取options。Ctor是vue的或vue的vue.extend定义的子类
 export function resolveConstructorOptions (Ctor: Class<Component>) {
+	// 子类自身配置
   let options = Ctor.options
+	
+	// 如果有超类，递归将所有超类的配置合并
   if (Ctor.super) {
+		// 获取超类的options
     const superOptions = resolveConstructorOptions(Ctor.super)
     const cachedSuperOptions = Ctor.superOptions
+		
+		// 如果缓存的options不等于缓存的options，说明超类的options已经修改，需要重新生成超类的options。并将新的superOptions保存
     if (superOptions !== cachedSuperOptions) {
       // super option changed,
       // need to resolve new options.
@@ -108,9 +133,12 @@ export function resolveConstructorOptions (Ctor: Class<Component>) {
       const modifiedOptions = resolveModifiedOptions(Ctor)
       // update base extend options
       if (modifiedOptions) {
+				// 
         extend(Ctor.extendOptions, modifiedOptions)
       }
+			// 
       options = Ctor.options = mergeOptions(superOptions, Ctor.extendOptions)
+			// 如果options有name，把name保存，用于递归控件解析的时候用
       if (options.name) {
         options.components[options.name] = Ctor
       }
@@ -119,9 +147,12 @@ export function resolveConstructorOptions (Ctor: Class<Component>) {
   return options
 }
 
+// 将
 function resolveModifiedOptions (Ctor: Class<Component>): ?Object {
   let modified
+	// 当前
   const latest = Ctor.options
+	// 
   const extended = Ctor.extendOptions
   const sealed = Ctor.sealedOptions
   for (const key in latest) {
@@ -133,6 +164,8 @@ function resolveModifiedOptions (Ctor: Class<Component>): ?Object {
   return modified
 }
 
+// options的合并，将extended和sealed合并到latest里面。
+// 可以将latest、extended、sealed中不是数组的转为数组，并最终合并
 function dedupe (latest, extended, sealed) {
   // compare latest and sealed to ensure lifecycle hooks won't be duplicated
   // between merges

@@ -1,3 +1,4 @@
+// vue及其子类（vue.extend继承的）的静态API，部分与Component的静态方法重复
 declare interface GlobalAPI {
   cid: number;
   options: Object;

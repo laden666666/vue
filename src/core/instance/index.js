@@ -12,10 +12,12 @@ function Vue (options) {
   ) {
     warn('Vue is a constructor and should be called with the `new` keyword')
   }
+	
+	// 和jq一样，核心的构造函数是init，不同的是。jq的$是工厂函数，而init是构造函数；vue的Vue是构造函数，init是扩展实例函数
   this._init(options)
 }
 
-// 定义了Vue原型
+// 定义了Vue原型和静态方法
 initMixin(Vue)
 stateMixin(Vue)
 eventsMixin(Vue)

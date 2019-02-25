@@ -39,7 +39,8 @@ export default class Watcher {
   lazy: boolean;
   // 是否是异步的？？？
   sync: boolean;
-  // 标记演示计算是否完成使用。true表示处于延时计算状态，需要调用evaluate方法进行计算
+  // 标记演示计算是否完成使用。true表示处于延时计算状态，需要调用evaluate方法进行计算。computer属性是true
+	// 主要是一些属性如computer需要立刻计算，计算完之后就不需要在立刻计算了，所有computer属性是true，并在计算完之后置成false
   dirty: boolean;
   // 是否激活中，未激活时候不会执行run方法
   active: boolean;
@@ -136,6 +137,7 @@ export default class Watcher {
       // dependencies for deep watching
 	  // 
       if (this.deep) {
+				// 访问value的所有子属性，这样表达式就依赖了value及其全部子元素
         traverse(value)
       }
       popTarget()
@@ -188,8 +190,7 @@ export default class Watcher {
    * Subscriber interface.
    * Will be called when a dependency changes.
    */
-  // 当watch依赖的watch改变的时候，其watch会通过update通知该watch，重新计算
-  // ???????????????
+  // 当watch依赖的watch改变的时候，其watch会通过Dep的depend方法，通知该watch的update方法，重新计算
   update () {
     /* istanbul ignore else */
     if (this.lazy) {
@@ -199,7 +200,7 @@ export default class Watcher {
 		// 如果是同步的，立刻执行run
       this.run()
     } else {
-		// 放入队列中执行，由scheduler执行更新
+		// 正常情况下，是放入队列中执行，由scheduler执行更新run
       queueWatcher(this)
     }
   }
@@ -211,12 +212,12 @@ export default class Watcher {
   // 公有方法，给Scheduler job调用的接口。
   // 该方法调用get计算value，并通过对比value和上一次计算是否发生变化，从而确定是否执行cb
   run () {
-	// 只计算active的watch
+	// 只计算active状态下的watch，keepActive缓存的Dom对应的watch就不执行了
     if (this.active) {
       const value = this.get()
       if (
         value !== this.value ||
-		// 为什么新值计算了就要触发object和deep的watch？？？？？？？？？？？难度是因为如果一个对象没有的子属性没有更改，就不会触发run？？？？
+		// 为什么新值计算了就要触发object和deep的watch？？？？？？？？？？？难道是因为如果一个对象没有的子属性没有更改，就不会触发run？？？？
         // Deep watchers and watchers on Object/Arrays should fire even
         // when the value is the same, because the value may
         // have mutated.
@@ -247,6 +248,7 @@ export default class Watcher {
    * Evaluate the value of the watcher.
    * This only gets called for lazy watchers.
    */
+	// 计算表达式的值
   evaluate () {
     this.value = this.get()
     this.dirty = false
@@ -289,19 +291,28 @@ export default class Watcher {
  * getters, so that every nested property inside the object
  * is collected as a "deep" dependency.
  */
-// 递归遍历一个对象以唤起所有转换的getter，以便将对象内的每个嵌套属性收集为“深度”依赖项
+// 递归遍历一个对象的所有getter（包括子属性的getter），并将每一个getter的ID收集到set中
+// 该函数的主要目的是帮助一个表达式“深度”依赖一个对象，在计算表达式的过程中，递归遍历一个对象（调用每个属性的depend）。
+// seenObjects是为了避免重复或者死循环调用而专门记录id，使其能够去重
 const seenObjects = new Set()
 function traverse (val: any) {
   seenObjects.clear()
   _traverse(val, seenObjects)
 }
 
+/**
+ * 遍历可观察对象val，将其的depID和其子属性的depID放到seen中
+ */
 function _traverse (val: any, seen: ISet) {
   let i, keys
   const isA = Array.isArray(val)
+	
+	// 如果不是数组、对象（非引用类型，没有办法观察），或者无法扩展（无法扩展属性，无法观察），不再处理
   if ((!isA && !isObject(val)) || !Object.isExtensible(val)) {
     return
   }
+	
+	// 如果对象存在自定义的可观察对象的私有属性——__ob__，从中获取depID，并将其保存到seen中
   if (val.__ob__) {
     const depId = val.__ob__.dep.id
     if (seen.has(depId)) {
@@ -309,12 +320,16 @@ function _traverse (val: any, seen: ISet) {
     }
     seen.add(depId)
   }
+	
+	// 递归将其子属性的depID放到seen中
   if (isA) {
     i = val.length
+		// 递归，同时访问每一个值，调用其getter，进而调用其Dep的depend
     while (i--) _traverse(val[i], seen)
   } else {
     keys = Object.keys(val)
     i = keys.length
+		// 递归，同时访问每一个值，调用其getter，进而调用其Dep的depend
     while (i--) _traverse(val[keys[i]], seen)
   }
 }

@@ -49,6 +49,7 @@ export function updateComponentListeners (
 
 // 扩展vue原型的方法。定义了原型的事件方法
 export function eventsMixin (Vue: Class<Component>) {
+	// 如果是hook开头，可以注册生命周期事件，https://cn.vuejs.org/v2/guide/components-edge-cases.html#%E7%A8%8B%E5%BA%8F%E5%8C%96%E7%9A%84%E4%BA%8B%E4%BB%B6%E4%BE%A6%E5%90%AC%E5%99%A8
   const hookRE = /^hook:/
   // 注意event是事件名或者是事件名的数组
   Vue.prototype.$on = function (event: string | Array<string>, fn: Function): Component {
@@ -75,6 +76,7 @@ export function eventsMixin (Vue: Class<Component>) {
   Vue.prototype.$once = function (event: string, fn: Function): Component {
     const vm: Component = this
 
+		// 就是调用$on，并自定义一个cb，里面调用$off和原cb
     function on () {
       vm.$off(event, on)
       fn.apply(vm, arguments)
@@ -87,12 +89,13 @@ export function eventsMixin (Vue: Class<Component>) {
   Vue.prototype.$off = function (event?: string | Array<string>, fn?: Function): Component {
     const vm: Component = this
     // all
-    // 如果参数
+    // 如果没有事件名参数，清除所用事件
     if (!arguments.length) {
       vm._events = Object.create(null)
       return vm
     }
     // array of events
+		// 如果事件名是一个数组，将数组里面的事件名一个个清除
     if (Array.isArray(event)) {
       for (let i = 0, l = event.length; i < l; i++) {
         this.$off(event[i], fn)
@@ -100,17 +103,19 @@ export function eventsMixin (Vue: Class<Component>) {
       return vm
     }
     // specific event
-    // 根据事件名获取事件列表
+    // 如果event事件名未注册事件，直接反会
     const cbs = vm._events[event]
     if (!cbs) {
       return vm
     }
 
-    // 如果只有一个参数，没有指定fn，清空事件列表
+    // 如果event注册了事件，且只有一个参数，没有指定fn，清空事件列表
     if (arguments.length === 1) {
       vm._events[event] = null
       return vm
     }
+		
+		// 否则仅清空指定的fn
     if (fn) {
       // specific handler
       let cb
@@ -126,6 +131,7 @@ export function eventsMixin (Vue: Class<Component>) {
     return vm
   }
 
+	//事件名不区分大小写
   Vue.prototype.$emit = function (event: string): Component {
     const vm: Component = this
     if (process.env.NODE_ENV !== 'production') {
@@ -146,7 +152,7 @@ export function eventsMixin (Vue: Class<Component>) {
       const args = toArray(arguments, 1)
       for (let i = 0, l = cbs.length; i < l; i++) {
         try {
-          // 依次调用注册的事件回调函数
+          // 依次调用注册的事件回调函数。注意这是一个同步调用。也就是说emit执行后，所有的cb已经执行完成
           cbs[i].apply(vm, args)
         } catch (e) {
           handleError(e, vm, `event handler for "${event}"`)

@@ -5,7 +5,7 @@ import { warn, makeMap } from '../util/index'
 
 let initProxy
 
-// 生产环境不能用？什么鬼？？？
+// 应该是一个打出未定义字段被修改、被取值的警告，如vm.a= 1，或者vm.a。如果a在vm上面未定义（不是data或者有setter的计算值），则给出警告
 if (process.env.NODE_ENV !== 'production') {
   const allowedGlobals = makeMap(
     'Infinity,undefined,NaN,isFinite,isNaN,' +
