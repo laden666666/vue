@@ -58,6 +58,7 @@ export function initMixin (Vue: Class<Component>) {
     }
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
+			// 如果是非生产模式，会用一个proxy代理vm，用于提示访问的属性名没有在vm上面定义的情况。仅在支持proxy语法时候这样提示
       initProxy(vm)
     } else {
       vm._renderProxy = vm
@@ -70,26 +71,28 @@ export function initMixin (Vue: Class<Component>) {
     initLifecycle(vm)
 		// 初始化事件
     initEvents(vm)
-		// 
+		// 定义_c和$createElement。以及$attrs和$listeners
     initRender(vm)
-		// 
+		// beforeCreate里面，没有定义如ico和props、data等内容，仅定义了事件，生命周期（不定义也用不了beforeCreate）等内容
     callHook(vm, 'beforeCreate')
-		// 
+		// 初始化ioc
     initInjections(vm) // resolve injections before data/props
-		// 
+		// 初始化计算值，data，watch，方法等内容
     initState(vm)
-		// 
+		// 获取Provide
     initProvide(vm) // resolve provide after data/props
-		// 
+		// 全部初始化完成，调用created
     callHook(vm, 'created')
 
     /* istanbul ignore if */
+		// 在非生产环境下，打印性能标记
     if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
       vm._name = formatComponentName(vm, false)
       mark(endTag)
       measure(`vue ${vm._name} init`, startTag, endTag)
     }
 
+		// 将vm mount到el上面
     if (vm.$options.el) {
       vm.$mount(vm.$options.el)
     }
@@ -130,13 +133,16 @@ export function resolveConstructorOptions (Ctor: Class<Component>) {
       // need to resolve new options.
       Ctor.superOptions = superOptions
       // check if there are any late-modified/attached options (#4976)
+			// 获取变化的内容，需要注意两点。1
       const modifiedOptions = resolveModifiedOptions(Ctor)
       // update base extend options
       if (modifiedOptions) {
-				// 
+				// 将变化的值保存到extendsoptions中，为什么？？？？
+				// 为了下次再创建提升性能？？？？
+				// 但是在extend时候变化是不合并到extendsoptions中，仅在父类的options变化时候才合并，为什么？？？？
         extend(Ctor.extendOptions, modifiedOptions)
       }
-			// 
+			// 将合并的值保存到options里面。注意options的地址改变了
       options = Ctor.options = mergeOptions(superOptions, Ctor.extendOptions)
 			// 如果options有name，把name保存，用于递归控件解析的时候用
       if (options.name) {
@@ -147,12 +153,10 @@ export function resolveConstructorOptions (Ctor: Class<Component>) {
   return options
 }
 
-// 将
+// latest已经不是最新的options，将latest中，和sealed不同的地方取出来，然后保存到modified中返回。
 function resolveModifiedOptions (Ctor: Class<Component>): ?Object {
   let modified
-	// 当前
   const latest = Ctor.options
-	// 
   const extended = Ctor.extendOptions
   const sealed = Ctor.sealedOptions
   for (const key in latest) {

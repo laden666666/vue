@@ -5,6 +5,7 @@ declare type InternalComponentOptions = {
 	// 
   parent: Component;
   propsData: ?Object;
+	// 父节点的vnode对象，updateChildComponent传入，初始化render时候使用
   _parentVnode: VNode;
   _parentListeners: ?Object;
   _renderChildren: ?Array<VNode>;
@@ -107,7 +108,7 @@ declare type ComponentOptions = {
   _isComponent?: true;
   //将propsOption的props名字以数组的形式保存起来，如props:{name: {type: String, default: ''}}，则_propKeys值为['name']。这样便于后续快速遍历props的名字 C
   _propKeys?: Array<string>;
-  //父节点的vnode对象，具体做什么？？？？？？？？？？
+  //父节点的vnode对象，updateChildComponent传入，初始化render时候使用
   _parentVnode?: VNode;
   //父节点的listener对象，具体做什么？？？？？？？？？？
   _parentListeners?: ?Object;

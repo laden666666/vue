@@ -123,7 +123,7 @@ declare interface Component {
   _vnode: ?VNode; // self root node
 	// 使用有生命周期方法，
   _hasHookEvent: boolean;
-	// 
+	// 一个私有属性，用于保存provid。初始化inject的时候，会递归查找父控件实例的_provided属性
   _provided: ?Object;
 
   // private methods
@@ -161,16 +161,16 @@ declare interface Component {
     children?: VNodeChildren,
     normalizationType?: number
   ) => VNode | void;
-
+	
   // renderStatic
   _m: (index: number, isInFor?: boolean) => VNode | VNodeChildren;
   // markOnce
   _o: (vnode: VNode | Array<VNode>, index: number, key: string) => VNode | VNodeChildren;
-  // toString
+  // toString 字符串函数
   _s: (value: mixed) => string;
   // text to VNode
   _v: (value: string | number) => VNode;
-  // toNumber
+  // toNumber 转数组函数
   _n: (value: string) => number | string;
   // empty vnode
   _e: () => VNode;
@@ -180,13 +180,13 @@ declare interface Component {
   _i: (arr: Array<mixed>, val: mixed) => number;
   // resolveFilter
   _f: (id: string) => Function;
-  // renderList
+  // renderList 列表渲染
   _l: (val: mixed, render: Function) => ?Array<VNode>;
-  // renderSlot
+  // renderSlot slot渲染
   _t: (name: string, fallback: ?Array<VNode>, props: ?Object) => ?Array<VNode>;
   // apply v-bind object
   _b: (data: any, tag: string, value: any, asProp: boolean, isSync?: boolean) => VNodeData;
-  // apply v-on object
+  // apply v-on object 
   _g: (data: any, value: any) => VNodeData;
   // check custom keyCode
   _k: (eventKeyCode: number, key: string, builtInAlias?: number | Array<number>, eventKeyName?: string) => ?boolean;

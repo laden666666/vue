@@ -50,6 +50,7 @@ export function proxy (target: Object, sourceKey: string, key: string) {
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
 
+// 初始化vm的props methods data computed watch
 export function initState (vm: Component) {
   vm._watchers = []
   const opts = vm.$options
@@ -66,6 +67,7 @@ export function initState (vm: Component) {
   }
 }
 
+// 初始化props
 function initProps (vm: Component, propsOptions: Object) {
   const propsData = vm.$options.propsData || {}
   const props = vm._props = {}
@@ -77,6 +79,7 @@ function initProps (vm: Component, propsOptions: Object) {
   observerState.shouldConvert = isRoot
   for (const key in propsOptions) {
     keys.push(key)
+		// 校验props
     const value = validateProp(key, propsOptions, propsData, vm)
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
@@ -100,6 +103,7 @@ function initProps (vm: Component, propsOptions: Object) {
         }
       })
     } else {
+			// 定义props
       defineReactive(props, key, value)
     }
     // static props are already proxied on the component's prototype

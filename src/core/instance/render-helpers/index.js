@@ -11,6 +11,7 @@ import { renderStatic, markOnce } from './render-static'
 import { bindObjectListeners } from './bind-object-listeners'
 import { resolveScopedSlots } from './resolve-slots'
 
+// 如图_c那样，vue提供了一些用于渲染的简写函数
 export function installRenderHelpers (target: any) {
   target._o = markOnce
   target._n = toNumber

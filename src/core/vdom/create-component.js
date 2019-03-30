@@ -53,7 +53,8 @@ const componentVNodeHooks = {
   prepatch (oldVnode: MountedComponentVNode, vnode: MountedComponentVNode) {
     const options = vnode.componentOptions
     const child = vnode.componentInstance = oldVnode.componentInstance
-    updateChildComponent(
+    // 
+		updateChildComponent(
       child,
       options.propsData, // updated props
       options.listeners, // updated listeners

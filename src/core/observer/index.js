@@ -171,7 +171,7 @@ export function defineReactive (
   key: string,
 	// 属性的原始值
   val: any,
-	// 自定义的set，应该是计算值的set用法等使用
+	// 自定义的set，应该是计算值的set用法等使用，或者提示用赋值语句
   customSetter?: ?Function,
 	// 如果属性发生变化，是否通知obj的sub。默认是不通知，什么情况下通知呢？我猜只有watch里的deep情况吧？
   shallow?: boolean
